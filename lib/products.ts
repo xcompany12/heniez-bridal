@@ -2,6 +2,8 @@ export const SILHOUETTES = ["A-Line", "Ball Gown", "Mermaid", "Sheath"] as const
 export const MATERIALS = ["Lace", "Silk", "Tulle"] as const;
 export const COLLECTIONS = ["Spring 2026", "Classic Timeless"] as const;
 
+export type ProductColor = { name: string; hex: string };
+
 export type Product = {
   id: number;
   slug: string;
@@ -12,9 +14,14 @@ export type Product = {
   material: (typeof MATERIALS)[number];
   collection: (typeof COLLECTIONS)[number];
   description: string;
+  /** Teks untuk bagian "Details and craftsmanship" di halaman detail */
+  craftsmanship: string;
+  colors: ProductColor[];
   /** Path di folder public/. Kosong = tampil penanda "Photo coming soon" */
   images: string[];
 };
+
+const IVORY: ProductColor = { name: "Ivory", hex: "#F3EBDD" };
 
 /**
  * DATA CONTOH. Nama, harga, dan deskripsi di bawah adalah placeholder
@@ -33,6 +40,9 @@ export const products: Product[] = [
     collection: "Classic Timeless",
     description:
       "A fitted bodice in hand-applied lace opens into a soft A-line skirt with a long, sweeping veil.",
+    craftsmanship:
+      "Lace appliques are placed by hand across the bodice and sleeves. A soft inner corset gives structure without stiffness.",
+    colors: [IVORY, { name: "Champagne", hex: "#E6D3B3" }],
     images: ["/images/products/josephine.jpg"],
   },
   {
@@ -45,6 +55,9 @@ export const products: Product[] = [
     collection: "Spring 2026",
     description:
       "A draped crepe mermaid with a strapless neckline and detachable lace sleeves.",
+    craftsmanship:
+      "The bodice is draped by hand in silk crepe. Lace sleeves detach, and a lace edge runs along the train.",
+    colors: [{ name: "Soft white", hex: "#F7F5F0" }, IVORY],
     images: ["/images/products/seraphina.jpg"],
   },
   {
@@ -56,6 +69,9 @@ export const products: Product[] = [
     material: "Tulle",
     collection: "Classic Timeless",
     description: "Layers of soft tulle build a full skirt with a cathedral train.",
+    craftsmanship:
+      "Multiple tulle layers are gathered onto a fitted bodice, with a built-in petticoat for volume.",
+    colors: [IVORY],
     images: [],
   },
   {
@@ -67,6 +83,9 @@ export const products: Product[] = [
     material: "Silk",
     collection: "Spring 2026",
     description: "A clean, close-fitting silk column with a low back.",
+    craftsmanship:
+      "Cut on the bias for a smooth line, with a low back finished by a row of covered buttons.",
+    colors: [IVORY],
     images: [],
   },
   {
@@ -78,6 +97,9 @@ export const products: Product[] = [
     material: "Tulle",
     collection: "Spring 2026",
     description: "A light A-line in layered tulle, finished with a sheer overlay.",
+    craftsmanship:
+      "Layered tulle skirt with a sheer overlay, sewn to a lightly structured bodice.",
+    colors: [IVORY, { name: "Blush", hex: "#F3D9D6" }],
     images: [],
   },
   {
@@ -89,6 +111,9 @@ export const products: Product[] = [
     material: "Lace",
     collection: "Classic Timeless",
     description: "Lace from neckline to hem, fitted through the hip and flared at the knee.",
+    craftsmanship:
+      "Lace is cut and aligned by hand so the pattern flows evenly from neckline to hem.",
+    colors: [IVORY],
     images: [],
   },
 ];
@@ -99,6 +124,24 @@ export async function getProducts(): Promise<Product[]> {
 
 export async function getProductBySlug(slug: string): Promise<Product | undefined> {
   return products.find((p) => p.slug === slug);
+}
+
+/** Gaun lain yang mirip: silhouette sama diutamakan, lalu collection sama. */
+export async function getRelatedProducts(
+  product: Product,
+  limit = 3
+): Promise<Product[]> {
+  return products
+    .filter((p) => p.id !== product.id)
+    .map((p) => ({
+      p,
+      score:
+        (p.silhouette === product.silhouette ? 2 : 0) +
+        (p.collection === product.collection ? 1 : 0),
+    }))
+    .sort((a, b) => b.score - a.score || a.p.id - b.p.id)
+    .slice(0, limit)
+    .map((x) => x.p);
 }
 
 export function formatIDR(amount: number): string {
