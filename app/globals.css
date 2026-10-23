@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-ivory font-body text-ink antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-heading font-normal;
+  }
+
+  :focus-visible {
+    outline: 2px solid #d4af37;
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    * {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Lebar konten seragam di semua halaman */
+  .container-site {
+    @apply mx-auto w-full max-w-site px-6 md:px-12 lg:px-20;
+  }
+
+  .btn-dark {
+    @apply inline-flex items-center justify-center bg-ink px-8 py-3.5 text-sm tracking-wide text-ivory transition-colors hover:bg-black;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center border border-ink px-8 py-3.5 text-sm tracking-wide text-ink transition-colors hover:bg-ink hover:text-ivory;
+  }
+}
