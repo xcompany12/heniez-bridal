@@ -4,6 +4,9 @@ import { getProducts } from "@/lib/products";
 
 export const metadata: Metadata = { title: "Collections" };
 
+// Data gaun datang dari database, jadi halaman dibuat setiap diminta.
+export const dynamic = "force-dynamic";
+
 export default async function CollectionsPage() {
   const products = await getProducts();
 
@@ -18,7 +21,13 @@ export default async function CollectionsPage() {
       </header>
 
       <div className="mt-14">
-        <CatalogClient products={products} />
+        {products.length > 0 ? (
+          <CatalogClient products={products} />
+        ) : (
+          <p className="py-16 text-muted">
+            Our collection is being updated. Please check back soon.
+          </p>
+        )}
       </div>
     </div>
   );

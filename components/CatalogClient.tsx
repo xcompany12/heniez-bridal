@@ -7,7 +7,7 @@ import {
   MATERIALS,
   SILHOUETTES,
   type Product,
-} from "@/lib/products";
+} from "@/lib/product-types";
 
 type FilterKey = "silhouette" | "material" | "collection";
 type Filters = Record<FilterKey, string[]>;

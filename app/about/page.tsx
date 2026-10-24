@@ -9,6 +9,9 @@ export const metadata: Metadata = {
     "A curated bridal boutique with private consultations and in-house master tailoring.",
 };
 
+// Lookbook membaca gaun dari database.
+export const dynamic = "force-dynamic";
+
 const FEATURES = [
   {
     title: "Curated selection",

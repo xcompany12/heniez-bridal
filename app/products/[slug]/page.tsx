@@ -8,14 +8,11 @@ import {
   formatIDR,
   getProductBySlug,
   getRelatedProducts,
-  products,
 } from "@/lib/products";
 
 type Props = { params: { slug: string } };
 
-export function generateStaticParams() {
-  return products.map((p) => ({ slug: p.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const product = await getProductBySlug(params.slug);
