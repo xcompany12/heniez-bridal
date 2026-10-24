@@ -36,7 +36,7 @@ export default async function AboutPage() {
     <>
       {/* Hero */}
       <section className="border-b border-line bg-blush/20">
-        <div className="container-site py-20 md:py-32">
+        <div className="container-site animate-fade-up py-20 md:py-32">
           <h1 className="max-w-3xl text-5xl leading-[1.1] md:text-7xl">
             Ethereal elegance for the modern romantic
           </h1>

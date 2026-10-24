@@ -9,6 +9,7 @@ import {
   getProductBySlug,
   getRelatedProducts,
 } from "@/lib/products";
+import { BRAND, getSiteUrl } from "@/lib/site";
 
 type Props = { params: { slug: string } };
 
@@ -17,7 +18,16 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const product = await getProductBySlug(params.slug);
   if (!product) return { title: "Gown not found" };
-  return { title: product.title, description: product.description };
+  const image = product.images[0];
+  return {
+    title: product.title,
+    description: product.description,
+    openGraph: {
+      title: `${product.title} | ${BRAND.name}`,
+      description: product.description,
+      ...(image ? { images: [{ url: image, alt: `${product.title} wedding gown` }] } : {}),
+    },
+  };
 }
 
 export default async function ProductPage({ params }: Props) {
@@ -42,8 +52,30 @@ export default async function ProductPage({ params }: Props) {
     },
   ];
 
+  const siteUrl = getSiteUrl();
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.title,
+    description: product.description,
+    image: product.images.map((u) => (u.startsWith("/") ? `${siteUrl}${u}` : u)),
+    brand: { "@type": "Brand", name: BRAND.name },
+    offers: {
+      "@type": "Offer",
+      url: `${siteUrl}/products/${product.slug}`,
+      priceCurrency: "IDR",
+      price: product.price,
+    },
+  };
+
   return (
     <div className="container-site py-10 md:py-16">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
       <nav aria-label="Breadcrumb" className="text-sm text-muted">
         <Link href="/collections" className="hover:text-ink">
           Collections

@@ -24,6 +24,16 @@ const config: Config = {
       maxWidth: {
         site: "1440px",
       },
+      keyframes: {
+        "fade-up": {
+          "0%": { opacity: "0", transform: "translateY(14px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+      },
+      animation: {
+        // Dimatikan otomatis untuk pengguna yang memilih "reduce motion" (lihat globals.css)
+        "fade-up": "fade-up 0.7s ease-out both",
+      },
     },
   },
   plugins: [],

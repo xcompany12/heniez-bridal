@@ -3,7 +3,7 @@ import { Playfair_Display, Montserrat } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SiteChrome from "@/components/SiteChrome";
-import { BRAND } from "@/lib/site";
+import { BRAND, getSiteUrl } from "@/lib/site";
 import "./globals.css";
 
 const heading = Playfair_Display({
@@ -21,13 +21,36 @@ const body = Montserrat({
   display: "swap",
 });
 
+const TITLE = `${BRAND.name} | ${BRAND.tagline}`;
+const DESCRIPTION =
+  "Curated wedding gowns, private fittings, and master tailoring. Find the gown made for your day.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(getSiteUrl()),
   title: {
-    default: `${BRAND.name} | ${BRAND.tagline}`,
+    default: TITLE,
     template: `%s | ${BRAND.name}`,
   },
-  description:
-    "Curated wedding gowns, private fittings, and master tailoring. Find the gown made for your day.",
+  description: DESCRIPTION,
+  openGraph: {
+    type: "website",
+    siteName: BRAND.name,
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [
+      {
+        url: "/images/products/josephine.jpg",
+        width: 736,
+        height: 1104,
+        alt: "A lace wedding gown with a long veil",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 };
 
 export default function RootLayout({
