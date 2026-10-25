@@ -24,7 +24,7 @@ export default function ProductOptions({
     <div className="space-y-8">
       <div>
         <p className="text-sm">
-          Size <span className="text-muted">(US)</span>
+          Your usual dress size <span className="text-muted">(US, optional)</span>
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {SIZES.map((s) => (
@@ -43,8 +43,9 @@ export default function ProductOptions({
             </button>
           ))}
         </div>
-        <p className="mt-3 text-xs text-muted">
-          Not sure? We take your measurements at the fitting.
+        <p className="mt-3 text-xs leading-relaxed text-muted">
+          Bridal sizing often differs from everyday sizes and between designers,
+          so we confirm your size from your measurements at the fitting.
         </p>
       </div>
 

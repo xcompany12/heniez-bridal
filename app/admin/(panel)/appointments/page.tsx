@@ -7,6 +7,7 @@ import {
   STATUS_LABELS,
   getAppointments,
   getStatusCounts,
+  formatMeasurements,
   isStatus,
   toWhatsAppNumber,
 } from "@/lib/admin-appointments";
@@ -157,6 +158,23 @@ export default async function AdminAppointmentsPage({ searchParams }: Props) {
                     </dd>
                   </div>
                 </dl>
+
+                {(row.wedding_date || formatMeasurements(row)) && (
+                  <dl className="mt-4 grid gap-x-8 gap-y-4 text-sm md:grid-cols-3">
+                    {row.wedding_date && (
+                      <div>
+                        <dt className="text-muted">Wedding date</dt>
+                        <dd className="mt-1">{formatDateLabel(row.wedding_date)}</dd>
+                      </div>
+                    )}
+                    {formatMeasurements(row) && (
+                      <div className="md:col-span-2">
+                        <dt className="text-muted">Measurements (cm)</dt>
+                        <dd className="mt-1">{formatMeasurements(row)}</dd>
+                      </div>
+                    )}
+                  </dl>
+                )}
 
                 {row.notes && (
                   <p className="mt-4 text-sm leading-relaxed">

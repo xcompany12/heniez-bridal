@@ -5,13 +5,26 @@ export const TIME_SLOTS = [
 
 export const GOWN_SIZES = ["2", "4", "6", "8", "10", "12", "14"] as const;
 
+/** Ukuran badan opsional (cm) beserta rentang yang masuk akal. */
+export const MEASUREMENTS = [
+  { key: "height_cm", label: "Height", min: 100, max: 230 },
+  { key: "bust_cm", label: "Bust", min: 50, max: 200 },
+  { key: "waist_cm", label: "Waist", min: 40, max: 200 },
+  { key: "hips_cm", label: "Hips", min: 50, max: 220 },
+] as const;
+
 export type AppointmentField =
   | "full_name"
   | "email"
   | "phone"
   | "preferred_date"
   | "preferred_time"
-  | "notes";
+  | "notes"
+  | "wedding_date"
+  | "height_cm"
+  | "bust_cm"
+  | "waist_cm"
+  | "hips_cm";
 
 export type AppointmentValues = {
   full_name: string;
@@ -20,6 +33,11 @@ export type AppointmentValues = {
   preferred_date: string;
   preferred_time: string;
   notes: string;
+  wedding_date: string;
+  height_cm: string;
+  bust_cm: string;
+  waist_cm: string;
+  hips_cm: string;
   gown_slug: string;
   size: string;
   color: string;
@@ -58,6 +76,11 @@ export function validateAppointment(raw: Record<string, string>) {
     preferred_date: raw.preferred_date ?? "",
     preferred_time: raw.preferred_time ?? "",
     notes: raw.notes ?? "",
+    wedding_date: raw.wedding_date ?? "",
+    height_cm: raw.height_cm ?? "",
+    bust_cm: raw.bust_cm ?? "",
+    waist_cm: raw.waist_cm ?? "",
+    hips_cm: raw.hips_cm ?? "",
     gown_slug: raw.gown_slug ?? "",
     size: raw.size ?? "",
     color: raw.color ?? "",
@@ -87,6 +110,28 @@ export function validateAppointment(raw: Record<string, string>) {
   }
   if (v.notes.length > 1000) {
     errors.notes = "Keep your notes under 1,000 characters.";
+  }
+
+  // Tanggal pernikahan: opsional.
+  if (v.wedding_date) {
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(v.wedding_date) ||
+      Number.isNaN(Date.parse(v.wedding_date))
+    ) {
+      errors.wedding_date = "Choose a valid date.";
+    } else if (v.wedding_date < todayInJakarta()) {
+      errors.wedding_date = "Choose today or a later date.";
+    }
+  }
+
+  // Ukuran badan: opsional, bilangan bulat dalam cm.
+  for (const m of MEASUREMENTS) {
+    const value = v[m.key];
+    if (!value) continue;
+    const n = Number(value);
+    if (!/^\d{2,3}$/.test(value) || n < m.min || n > m.max) {
+      errors[m.key] = `${m.label}: enter a whole number in cm, between ${m.min} and ${m.max}.`;
+    }
   }
 
   // Isian opsional dari halaman detail gaun: buang bila bentuknya tidak wajar.

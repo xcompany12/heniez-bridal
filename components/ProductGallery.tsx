@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import ImageLightbox from "@/components/ImageLightbox";
 import ProductImage from "@/components/ProductImage";
 
 export default function ProductGallery({
@@ -11,7 +12,9 @@ export default function ProductGallery({
   title: string;
 }) {
   const [index, setIndex] = useState(0);
+  const [zoomOpen, setZoomOpen] = useState(false);
   const hasMany = images.length > 1;
+  const current = images[index];
 
   return (
     <div className={hasMany ? "flex flex-col-reverse gap-4 md:flex-row" : ""}>
@@ -39,12 +42,51 @@ export default function ProductGallery({
 
       <div className="relative aspect-[2/3] min-w-0 flex-1 bg-line/40">
         <ProductImage
-          src={images[index]}
+          src={current}
           title={title}
           sizes="(min-width: 1024px) 45vw, 100vw"
           priority
         />
+
+        {current && (
+          <button
+            type="button"
+            onClick={() => setZoomOpen(true)}
+            aria-label={`Zoom in on ${title} photo`}
+            className="absolute inset-0 cursor-zoom-in"
+          >
+            {/* Penanda zoom, terutama untuk layar sentuh yang tidak punya kursor */}
+            <span
+              aria-hidden="true"
+              className="absolute bottom-3 right-3 flex h-10 w-10 items-center justify-center bg-ivory/90 text-ink"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
+                <circle cx="10.5" cy="10.5" r="6.5" />
+                <path d="M15.5 15.5L21 21M10.5 8v5M8 10.5h5" />
+              </svg>
+            </span>
+          </button>
+        )}
       </div>
+
+      {zoomOpen && (
+        <ImageLightbox
+          images={images}
+          startIndex={index}
+          title={title}
+          onClose={(last) => {
+            setIndex(last);
+            setZoomOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

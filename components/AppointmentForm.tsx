@@ -5,6 +5,7 @@ import { useFormState, useFormStatus } from "react-dom";
 import { createAppointment } from "@/app/appointments/actions";
 import {
   INITIAL_STATE,
+  MEASUREMENTS,
   TIME_SLOTS,
   type AppointmentField,
 } from "@/lib/appointments";
@@ -165,6 +166,63 @@ export default function AppointmentForm({ minDate, gown, size, color }: Props) {
           <FieldError name="preferred_time" />
         </div>
       </div>
+
+      <div>
+        <label htmlFor="wedding_date" className="mb-2 block text-sm">
+          Wedding date (optional)
+        </label>
+        <input
+          {...fieldProps("wedding_date")}
+          type="date"
+          min={minDate}
+          defaultValue={values.wedding_date}
+        />
+        <p className="mt-2 text-xs text-muted">
+          Helps us plan the time needed to prepare your gown.
+        </p>
+        <FieldError name="wedding_date" />
+      </div>
+
+      <fieldset>
+        <legend className="mb-2 block text-sm">
+          Your measurements in cm (optional)
+        </legend>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          {MEASUREMENTS.map((m) => (
+            <div key={m.key}>
+              <label htmlFor={m.key} className="mb-2 block text-xs text-muted">
+                {m.label}
+              </label>
+              <input
+                {...fieldProps(m.key)}
+                type="text"
+                inputMode="numeric"
+                placeholder="cm"
+                defaultValue={values[m.key]}
+              />
+            </div>
+          ))}
+        </div>
+        {MEASUREMENTS.map((m) => (
+          <FieldError key={m.key} name={m.key} />
+        ))}
+        <p className="mt-3 text-xs leading-relaxed text-muted">
+          Not sure? Leave them blank. We measure you at the fitting, and we
+          use these details only to prepare for it.
+        </p>
+        <details className="mt-3 text-sm">
+          <summary className="cursor-pointer underline underline-offset-4">
+            How to measure
+          </summary>
+          <ul className="mt-3 max-w-md space-y-2 text-xs leading-relaxed text-muted">
+            <li>Bust: around the fullest part of your chest, with the tape level across your back.</li>
+            <li>Waist: around the narrowest part of your torso, usually just above the belly button.</li>
+            <li>Hips: around the fullest part of your hips.</li>
+            <li>Height: standing straight, without shoes.</li>
+            <li>Wear thin clothing, keep the tape snug but not tight, and ask someone to help you.</li>
+          </ul>
+        </details>
+      </fieldset>
 
       <div>
         <label htmlFor="notes" className="mb-2 block text-sm">

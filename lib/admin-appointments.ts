@@ -22,8 +22,23 @@ export type AppointmentRow = {
   size: string | null;
   color: string | null;
   notes: string | null;
+  wedding_date: string | null;
+  height_cm: number | null;
+  bust_cm: number | null;
+  waist_cm: number | null;
+  hips_cm: number | null;
   status: AppointmentStatus;
 };
+
+/** Ukuran yang diisi pengunjung, mis. "Height 165, Bust 86". Kosong bila tidak ada. */
+export function formatMeasurements(row: AppointmentRow): string {
+  const parts: string[] = [];
+  if (row.height_cm) parts.push(`Height ${row.height_cm}`);
+  if (row.bust_cm) parts.push(`Bust ${row.bust_cm}`);
+  if (row.waist_cm) parts.push(`Waist ${row.waist_cm}`);
+  if (row.hips_cm) parts.push(`Hips ${row.hips_cm}`);
+  return parts.join(", ");
+}
 
 export function isStatus(value: string): value is AppointmentStatus {
   return (STATUSES as readonly string[]).includes(value);

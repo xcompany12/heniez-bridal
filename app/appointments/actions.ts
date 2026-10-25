@@ -50,6 +50,12 @@ export async function createAppointment(
     size: values.size || null,
     color: values.color || null,
     notes: values.notes || null,
+    // Kolom tambahan hanya dikirim bila diisi.
+    ...(values.wedding_date ? { wedding_date: values.wedding_date } : {}),
+    ...(values.height_cm ? { height_cm: Number(values.height_cm) } : {}),
+    ...(values.bust_cm ? { bust_cm: Number(values.bust_cm) } : {}),
+    ...(values.waist_cm ? { waist_cm: Number(values.waist_cm) } : {}),
+    ...(values.hips_cm ? { hips_cm: Number(values.hips_cm) } : {}),
   });
 
   if (error) {
