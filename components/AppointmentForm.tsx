@@ -9,6 +9,7 @@ import {
   TIME_SLOTS,
   type AppointmentField,
 } from "@/lib/appointments";
+import { SELECT_STYLE } from "@/lib/ui";
 
 type Props = {
   minDate: string;
@@ -19,6 +20,13 @@ type Props = {
 
 const inputClass =
   "w-full border border-line bg-white/60 px-4 py-3 text-sm placeholder:text-muted/60";
+
+// Satu baris: tinggi seragam dan tidak boleh lebih lebar dari kolomnya.
+// appearance-none + min-w-0 mencegah input tanggal dan select di Safari
+// (iPad, iPhone) meluber ke kolom sebelahnya.
+const controlClass = `${inputClass} block h-12 min-w-0 max-w-full appearance-none`;
+const dateClass = `${controlClass} [&::-webkit-date-and-time-value]:min-h-[1.5em] [&::-webkit-date-and-time-value]:text-left`;
+const selectClass = `${controlClass} pr-10`;
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -60,12 +68,22 @@ export default function AppointmentForm({ minDate, gown, size, color }: Props) {
   const errors = state.errors ?? {};
   const values = state.values ?? {};
 
-  const fieldProps = (name: AppointmentField) => ({
+  const fieldProps = (
+    name: AppointmentField,
+    kind: "text" | "control" | "date" | "select" = "control"
+  ) => ({
     id: name,
     name,
     "aria-invalid": errors[name] ? true : undefined,
     "aria-describedby": errors[name] ? `${name}-error` : undefined,
-    className: inputClass,
+    className:
+      kind === "text"
+        ? inputClass
+        : kind === "date"
+          ? dateClass
+          : kind === "select"
+            ? selectClass
+            : controlClass,
   });
 
   const FieldError = ({ name }: { name: AppointmentField }) =>
@@ -107,7 +125,7 @@ export default function AppointmentForm({ minDate, gown, size, color }: Props) {
         <FieldError name="full_name" />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 [&>*]:min-w-0">
         <div>
           <label htmlFor="email" className="mb-2 block text-sm">
             Email address
@@ -136,13 +154,13 @@ export default function AppointmentForm({ minDate, gown, size, color }: Props) {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 [&>*]:min-w-0">
         <div>
           <label htmlFor="preferred_date" className="mb-2 block text-sm">
             Preferred date
           </label>
           <input
-            {...fieldProps("preferred_date")}
+            {...fieldProps("preferred_date", "date")}
             type="date"
             min={minDate}
             defaultValue={values.preferred_date}
@@ -154,7 +172,8 @@ export default function AppointmentForm({ minDate, gown, size, color }: Props) {
             Preferred time
           </label>
           <select
-            {...fieldProps("preferred_time")}
+            {...fieldProps("preferred_time", "select")}
+            style={SELECT_STYLE}
             defaultValue={values.preferred_time ?? TIME_SLOTS[0].value}
           >
             {TIME_SLOTS.map((slot) => (
@@ -172,7 +191,7 @@ export default function AppointmentForm({ minDate, gown, size, color }: Props) {
           Wedding date (optional)
         </label>
         <input
-          {...fieldProps("wedding_date")}
+          {...fieldProps("wedding_date", "date")}
           type="date"
           min={minDate}
           defaultValue={values.wedding_date}
@@ -187,7 +206,7 @@ export default function AppointmentForm({ minDate, gown, size, color }: Props) {
         <legend className="mb-2 block text-sm">
           Your measurements in cm (optional)
         </legend>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4 [&>*]:min-w-0">
           {MEASUREMENTS.map((m) => (
             <div key={m.key}>
               <label htmlFor={m.key} className="mb-2 block text-xs text-muted">
@@ -229,7 +248,7 @@ export default function AppointmentForm({ minDate, gown, size, color }: Props) {
           Tell us about your wedding and style (optional)
         </label>
         <textarea
-          {...fieldProps("notes")}
+          {...fieldProps("notes", "text")}
           rows={4}
           placeholder="Wedding date, venue, or the silhouettes you like"
           defaultValue={values.notes}

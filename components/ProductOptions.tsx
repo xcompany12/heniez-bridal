@@ -14,10 +14,11 @@ export default function ProductOptions({
   colors: ProductColor[];
 }) {
   const [size, setSize] = useState<string | null>(null);
-  const [color, setColor] = useState(colors[0].name);
+  const [color, setColor] = useState(colors[0]?.name ?? "");
 
   // Pilihan ikut terbawa ke form appointment (dibaca di Tahap 4).
-  const params = new URLSearchParams({ gown: slug, color });
+  const params = new URLSearchParams({ gown: slug });
+  if (color) params.set("color", color);
   if (size) params.set("size", size);
 
   return (
@@ -49,26 +50,28 @@ export default function ProductOptions({
         </p>
       </div>
 
-      <div>
-        <p className="text-sm">
-          Color: <span className="text-muted">{color}</span>
-        </p>
-        <div className="mt-3 flex gap-3">
-          {colors.map((c) => (
-            <button
-              key={c.name}
-              type="button"
-              aria-label={c.name}
-              aria-pressed={color === c.name}
-              onClick={() => setColor(c.name)}
-              className={`h-9 w-9 rounded-full border border-line outline outline-offset-2 transition-all ${
-                color === c.name ? "outline-2 outline-ink" : "outline-0"
-              }`}
-              style={{ backgroundColor: c.hex }}
-            />
-          ))}
+      {colors.length > 0 && (
+        <div>
+          <p className="text-sm">
+            Color: <span className="text-muted">{color}</span>
+          </p>
+          <div className="mt-3 flex gap-3">
+            {colors.map((c) => (
+              <button
+                key={c.name}
+                type="button"
+                aria-label={c.name}
+                aria-pressed={color === c.name}
+                onClick={() => setColor(c.name)}
+                className={`h-9 w-9 rounded-full border border-line outline outline-offset-2 transition-all ${
+                  color === c.name ? "outline-2 outline-ink" : "outline-0"
+                }`}
+                style={{ backgroundColor: c.hex }}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <Link
         href={`/appointments?${params.toString()}`}

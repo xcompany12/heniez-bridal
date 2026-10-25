@@ -76,7 +76,7 @@ export function parseColors(text: string): {
     .map((l) => l.trim())
     .filter(Boolean);
 
-  if (lines.length === 0) return { colors: [{ name: "Ivory", hex: "#F3EBDD" }] };
+  if (lines.length === 0) return { colors: [] };
   if (lines.length > 8) return { colors: [], error: "Use at most 8 colors." };
 
   const colors: ProductColor[] = [];

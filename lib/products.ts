@@ -20,8 +20,6 @@ export type ProductRow = {
   created_at: string;
 };
 
-const IVORY: ProductColor = { name: "Ivory", hex: "#F3EBDD" };
-
 export function rowToProduct(row: ProductRow): Product {
   return {
     id: row.id,
@@ -33,7 +31,7 @@ export function rowToProduct(row: ProductRow): Product {
     collection: row.collection,
     description: row.description,
     craftsmanship: row.craftsmanship,
-    colors: Array.isArray(row.colors) && row.colors.length > 0 ? row.colors : [IVORY],
+    colors: Array.isArray(row.colors) ? row.colors : [],
     images: row.images ?? [],
   };
 }

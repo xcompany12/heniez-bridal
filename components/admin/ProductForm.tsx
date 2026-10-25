@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { getUploadTicket, saveProduct } from "@/app/admin/(panel)/products/actions";
+import ColorsField from "@/components/admin/ColorsField";
 import { prepareForUpload } from "@/lib/image-resize";
 import {
   ALLOWED_IMAGE_TYPES,
@@ -12,7 +13,6 @@ import {
   MAX_ORIGINAL_BYTES,
   PRODUCT_BUCKET,
   UPLOAD_MAX_EDGE,
-  colorsToText,
   type ProductField,
 } from "@/lib/product-form";
 import type { ProductColor } from "@/lib/product-types";
@@ -277,28 +277,7 @@ export default function ProductForm({
         <FieldError name="craftsmanship" />
       </div>
 
-      <div>
-        <label htmlFor="colors" className="mb-2 block text-sm">
-          Colors
-        </label>
-        <textarea
-          id="colors"
-          name="colors"
-          rows={3}
-          className={`${inputClass} font-mono`}
-          defaultValue={text(
-            "colors",
-            product?.colors?.length
-              ? colorsToText(product.colors)
-              : "Ivory, #F3EBDD"
-          )}
-          {...describe("colors")}
-        />
-        <p className="mt-2 text-xs text-muted">
-          One color per line, written as Name, #RRGGBB.
-        </p>
-        <FieldError name="colors" />
-      </div>
+      <ColorsField initial={product?.colors ?? []} error={errors.colors} />
 
       <div>
         <p className="mb-2 text-sm">Photos</p>
