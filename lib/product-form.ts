@@ -64,33 +64,34 @@ export function slugify(input: string): string {
 }
 
 export function colorsToText(colors: ProductColor[]): string {
-  return colors.map((c) => `${c.name}, ${c.hex}`).join("\n");
+  return colors.map((c) => c.name).join(", ");
 }
 
+/** Nama warna diketik bebas, dipisah koma. Contoh: "Ivory, Champagne". */
 export function parseColors(text: string): {
   colors: ProductColor[];
   error?: string;
 } {
-  const lines = text
-    .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean);
+  const names: string[] = [];
 
-  if (lines.length === 0) return { colors: [] };
-  if (lines.length > 8) return { colors: [], error: "Use at most 8 colors." };
-
-  const colors: ProductColor[] = [];
-  for (const line of lines) {
-    const m = line.match(/^(.{1,30}?)\s*[,;]\s*(#[0-9a-fA-F]{6})$/);
-    if (!m) {
+  for (const part of text.split(/[,;\n]/)) {
+    const name = part.replace(/\s+/g, " ").trim();
+    if (!name) continue;
+    if (name.length > 30) {
       return {
         colors: [],
-        error: `Write each color as "Name, #RRGGBB". Problem line: ${line}`,
+        error: `"${name.slice(0, 20)}..." is too long. Keep each color name under 30 characters.`,
       };
     }
-    colors.push({ name: m[1].trim(), hex: m[2].toUpperCase() });
+    if (!names.some((n) => n.toLowerCase() === name.toLowerCase())) {
+      names.push(name);
+    }
   }
-  return { colors };
+
+  if (names.length > 12) return { colors: [], error: "Use at most 12 colors." };
+
+  // hex dikosongkan: situs menampilkan nama warna, bukan lingkaran warna
+  return { colors: names.map((name) => ({ name, hex: "" })) };
 }
 
 function isAllowedImageUrl(url: string): boolean {

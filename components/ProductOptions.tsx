@@ -55,19 +55,21 @@ export default function ProductOptions({
           <p className="text-sm">
             Color: <span className="text-muted">{color}</span>
           </p>
-          <div className="mt-3 flex gap-3">
+          <div className="mt-3 flex flex-wrap gap-2">
             {colors.map((c) => (
               <button
                 key={c.name}
                 type="button"
-                aria-label={c.name}
                 aria-pressed={color === c.name}
                 onClick={() => setColor(c.name)}
-                className={`h-9 w-9 rounded-full border border-line outline outline-offset-2 transition-all ${
-                  color === c.name ? "outline-2 outline-ink" : "outline-0"
+                className={`border px-4 py-2 text-sm transition-colors ${
+                  color === c.name
+                    ? "border-ink bg-ink text-ivory"
+                    : "border-line hover:border-ink"
                 }`}
-                style={{ backgroundColor: c.hex }}
-              />
+              >
+                {c.name}
+              </button>
             ))}
           </div>
         </div>

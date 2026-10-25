@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { getUploadTicket, saveProduct } from "@/app/admin/(panel)/products/actions";
-import ColorsField from "@/components/admin/ColorsField";
 import { prepareForUpload } from "@/lib/image-resize";
 import {
   ALLOWED_IMAGE_TYPES,
@@ -13,6 +12,7 @@ import {
   MAX_ORIGINAL_BYTES,
   PRODUCT_BUCKET,
   UPLOAD_MAX_EDGE,
+  colorsToText,
   type ProductField,
 } from "@/lib/product-form";
 import type { ProductColor } from "@/lib/product-types";
@@ -277,7 +277,29 @@ export default function ProductForm({
         <FieldError name="craftsmanship" />
       </div>
 
-      <ColorsField initial={product?.colors ?? []} error={errors.colors} />
+      <div>
+        <label htmlFor="colors" className="mb-2 block text-sm">
+          Colors (optional)
+        </label>
+        <input
+          id="colors"
+          name="colors"
+          type="text"
+          className={inputClass}
+          placeholder="e.g. Ivory, Champagne"
+          defaultValue={text(
+            "colors",
+            product?.colors?.length ? colorsToText(product.colors) : ""
+          )}
+          {...describe("colors")}
+        />
+        <p className="mt-2 text-xs text-muted">
+          Type the color names, separated by commas. Visitors can pick one when
+          they book a fitting. Leave it empty if the gown comes in one color
+          only.
+        </p>
+        <FieldError name="colors" />
+      </div>
 
       <div>
         <p className="mb-2 text-sm">Photos</p>
