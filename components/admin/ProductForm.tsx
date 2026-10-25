@@ -4,21 +4,18 @@ import Link from "next/link";
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { getUploadTicket, saveProduct } from "@/app/admin/(panel)/products/actions";
+import { prepareForUpload } from "@/lib/image-resize";
 import {
   ALLOWED_IMAGE_TYPES,
   INITIAL_PRODUCT_STATE,
   MAX_IMAGES,
-  MAX_IMAGE_BYTES,
+  MAX_ORIGINAL_BYTES,
   PRODUCT_BUCKET,
+  UPLOAD_MAX_EDGE,
   colorsToText,
   type ProductField,
 } from "@/lib/product-form";
-import {
-  COLLECTIONS,
-  MATERIALS,
-  SILHOUETTES,
-  type ProductColor,
-} from "@/lib/product-types";
+import type { ProductColor } from "@/lib/product-types";
 import { getSupabaseBrowser } from "@/lib/supabase/browser";
 
 type EditableProduct = {
@@ -36,6 +33,12 @@ type EditableProduct = {
   is_published: boolean;
 };
 
+type Suggestions = {
+  silhouette: string[];
+  material: string[];
+  collection: string[];
+};
+
 const inputClass = "w-full border border-line bg-white/60 px-4 py-3 text-sm";
 
 function SubmitButton({ disabled }: { disabled: boolean }) {
@@ -51,11 +54,18 @@ function SubmitButton({ disabled }: { disabled: boolean }) {
   );
 }
 
-export default function ProductForm({ product }: { product?: EditableProduct }) {
+export default function ProductForm({
+  product,
+  suggestions,
+}: {
+  product?: EditableProduct;
+  suggestions: Suggestions;
+}) {
   const [state, formAction] = useFormState(saveProduct, INITIAL_PRODUCT_STATE);
   const [images, setImages] = useState<string[]>(product?.images ?? []);
   const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<string | null>(null);
+  const [uploadErrors, setUploadErrors] = useState<string[]>([]);
 
   const v = state.values;
   const errors = state.errors ?? {};
@@ -82,27 +92,38 @@ export default function ProductForm({ product }: { product?: EditableProduct }) 
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
-    setUploadError(null);
+    setUploadErrors([]);
     setUploading(true);
 
+    const list = Array.from(files);
+    const problems: string[] = [];
     let count = images.length;
-    for (const file of Array.from(files)) {
+
+    for (let i = 0; i < list.length; i++) {
+      const original = list[i];
+      setProgress(`Uploading photo ${i + 1} of ${list.length}`);
+
       if (count >= MAX_IMAGES) {
-        setUploadError(`You can add up to ${MAX_IMAGES} photos.`);
+        problems.push(`A gown can have up to ${MAX_IMAGES} photos.`);
         break;
       }
-      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-        setUploadError(`${file.name}: only JPG, PNG, or WebP photos are allowed.`);
+      if (!ALLOWED_IMAGE_TYPES.includes(original.type)) {
+        problems.push(
+          `${original.name}: only JPG, PNG, or WebP photos are supported. Export HEIC photos as JPG first.`
+        );
         continue;
       }
-      if (file.size > MAX_IMAGE_BYTES) {
-        setUploadError(`${file.name}: the photo is larger than 5 MB.`);
+      if (original.size > MAX_ORIGINAL_BYTES) {
+        problems.push(`${original.name}: the file is larger than 80 MB.`);
         continue;
       }
+
+      // Foto besar dari kamera profesional diperkecil dulu agar cepat dan hemat tempat.
+      const file = await prepareForUpload(original);
 
       const ticket = await getUploadTicket(file.type);
       if ("error" in ticket) {
-        setUploadError(ticket.error);
+        problems.push(`${original.name}: ${ticket.error}`);
         continue;
       }
 
@@ -112,7 +133,7 @@ export default function ProductForm({ product }: { product?: EditableProduct }) 
           contentType: file.type,
         });
       if (error) {
-        setUploadError(`${file.name}: the upload failed. Try again.`);
+        problems.push(`${original.name}: the upload failed. Try again.`);
         continue;
       }
 
@@ -120,7 +141,9 @@ export default function ProductForm({ product }: { product?: EditableProduct }) 
       setImages((prev) => [...prev, ticket.publicUrl]);
     }
 
+    setProgress(null);
     setUploading(false);
+    setUploadErrors(problems);
   }
 
   const makeMain = (index: number) =>
@@ -185,34 +208,43 @@ export default function ProductForm({ product }: { product?: EditableProduct }) 
         <FieldError name="price" />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        {(
-          [
-            ["silhouette", "Silhouette", SILHOUETTES, product?.silhouette],
-            ["material", "Material", MATERIALS, product?.material],
-            ["collection", "Collection", COLLECTIONS, product?.collection],
-          ] as const
-        ).map(([name, label, options, current]) => (
-          <div key={name}>
-            <label htmlFor={name} className="mb-2 block text-sm">
-              {label}
-            </label>
-            <select
-              id={name}
-              name={name}
-              className={inputClass}
-              defaultValue={text(name, current ?? options[0])}
-              {...describe(name)}
-            >
-              {options.map((o) => (
-                <option key={o} value={o}>
-                  {o}
-                </option>
-              ))}
-            </select>
-            <FieldError name={name} />
-          </div>
-        ))}
+      <div>
+        <div className="grid gap-6 md:grid-cols-3">
+          {(
+            [
+              ["silhouette", "Silhouette", "e.g. Mermaid", product?.silhouette],
+              ["material", "Material", "e.g. Lace", product?.material],
+              ["collection", "Collection", "e.g. Spring 2026", product?.collection],
+            ] as const
+          ).map(([name, label, placeholder, current]) => (
+            <div key={name}>
+              <label htmlFor={name} className="mb-2 block text-sm">
+                {label}
+              </label>
+              <input
+                id={name}
+                name={name}
+                type="text"
+                list={`${name}-options`}
+                autoComplete="off"
+                className={inputClass}
+                placeholder={placeholder}
+                defaultValue={text(name, current ?? "")}
+                {...describe(name)}
+              />
+              <datalist id={`${name}-options`}>
+                {suggestions[name].map((option) => (
+                  <option key={option} value={option} />
+                ))}
+              </datalist>
+              <FieldError name={name} />
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-muted">
+          Type anything you like. Suggestions come from your other gowns; using
+          the same wording keeps the filters on the site tidy.
+        </p>
       </div>
 
       <div>
@@ -321,15 +353,24 @@ export default function ProductForm({ product }: { product?: EditableProduct }) 
           className="text-sm"
           aria-label="Add photos"
         />
-        <p className="mt-2 text-xs text-muted">
-          JPG, PNG, or WebP, up to 5 MB each, up to {MAX_IMAGES} photos. The
-          first photo is the main one. Photos are saved when you click Save gown.
+        <p className="mt-2 text-xs leading-relaxed text-muted">
+          Select as many photos as you like, at any size. Large camera photos
+          are shrunk in your browser to at most {UPLOAD_MAX_EDGE} pixels on the
+          long side before they are saved, which keeps the site fast and still
+          looks sharp on any screen. JPG, PNG, or WebP. The first photo is the
+          main one. Photos are saved when you click Save gown.
         </p>
-        {uploading && <p className="mt-2 text-sm">Uploading...</p>}
-        {uploadError && (
-          <p role="alert" className="mt-2 text-sm text-red-700">
-            {uploadError}
+        {uploading && (
+          <p role="status" className="mt-2 text-sm">
+            {progress ?? "Uploading..."}
           </p>
+        )}
+        {uploadErrors.length > 0 && (
+          <ul role="alert" className="mt-2 space-y-1 text-sm text-red-700">
+            {uploadErrors.map((message) => (
+              <li key={message}>{message}</li>
+            ))}
+          </ul>
         )}
         <FieldError name="images" />
       </div>

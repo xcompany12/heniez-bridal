@@ -34,7 +34,7 @@ grant select, insert, update, delete on table public.products to service_role;
 -- 3. Tempat penyimpanan foto (publik untuk dibaca, upload hanya lewat server)
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
-  'product-images', 'product-images', true, 5242880,
+  'product-images', 'product-images', true, null,
   array['image/jpeg', 'image/png', 'image/webp']
 )
 on conflict (id) do nothing;

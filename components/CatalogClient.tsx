@@ -2,29 +2,36 @@
 
 import { useMemo, useState } from "react";
 import ProductCard from "@/components/ProductCard";
-import {
-  COLLECTIONS,
-  MATERIALS,
-  SILHOUETTES,
-  type Product,
-} from "@/lib/product-types";
+import { uniqueLabels, type Product } from "@/lib/product-types";
 
 type FilterKey = "silhouette" | "material" | "collection";
 type Filters = Record<FilterKey, string[]>;
 type SortKey = "featured" | "newest" | "price-asc" | "price-desc";
 
-const GROUPS: { key: FilterKey; label: string; options: readonly string[] }[] = [
-  { key: "silhouette", label: "Silhouette", options: SILHOUETTES },
-  { key: "material", label: "Material", options: MATERIALS },
-  { key: "collection", label: "Collection", options: COLLECTIONS },
+const GROUPS: { key: FilterKey; label: string }[] = [
+  { key: "silhouette", label: "Silhouette" },
+  { key: "material", label: "Material" },
+  { key: "collection", label: "Collection" },
 ];
 
 const EMPTY: Filters = { silhouette: [], material: [], collection: [] };
+
+const norm = (value: string) => value.trim().toLowerCase();
 
 export default function CatalogClient({ products }: { products: Product[] }) {
   const [filters, setFilters] = useState<Filters>(EMPTY);
   const [sort, setSort] = useState<SortKey>("featured");
   const [panelOpen, setPanelOpen] = useState(false);
+
+  // Pilihan filter dibentuk dari isi katalog, jadi otomatis mengikuti yang diketik pemilik.
+  const options = useMemo(
+    () => ({
+      silhouette: uniqueLabels(products.map((p) => p.silhouette)),
+      material: uniqueLabels(products.map((p) => p.material)),
+      collection: uniqueLabels(products.map((p) => p.collection)),
+    }),
+    [products]
+  );
 
   const activeCount =
     filters.silhouette.length + filters.material.length + filters.collection.length;
@@ -41,7 +48,11 @@ export default function CatalogClient({ products }: { products: Product[] }) {
   const visible = useMemo(() => {
     const keys = Object.keys(filters) as FilterKey[];
     const list = products.filter((p) =>
-      keys.every((k) => filters[k].length === 0 || filters[k].includes(p[k]))
+      keys.every(
+        (k) =>
+          filters[k].length === 0 ||
+          filters[k].some((selected) => norm(selected) === norm(p[k]))
+      )
     );
     switch (sort) {
       case "newest":
@@ -74,11 +85,11 @@ export default function CatalogClient({ products }: { products: Product[] }) {
           id="filter-panel"
           className={`${panelOpen ? "block" : "hidden"} mt-6 space-y-8 lg:mt-0 lg:block`}
         >
-          {GROUPS.map((group) => (
+          {GROUPS.filter((group) => options[group.key].length > 0).map((group) => (
             <fieldset key={group.key}>
               <legend className="font-heading text-lg">{group.label}</legend>
               <ul className="mt-3 space-y-2.5">
-                {group.options.map((option) => (
+                {options[group.key].map((option) => (
                   <li key={option}>
                     <label className="flex cursor-pointer items-center gap-3 text-sm text-muted hover:text-ink">
                       <input

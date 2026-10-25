@@ -101,6 +101,21 @@ export async function saveProduct(
     };
   }
 
+  // Samakan ejaan silhouette, material, dan collection dengan gaun lain
+  // (mis. "lace" menjadi "Lace") agar filter di situs tidak terpecah.
+  let existingQuery = db.from("products").select("silhouette, material, collection");
+  if (id !== null) existingQuery = existingQuery.neq("id", id);
+  const { data: existing } = await existingQuery;
+  const canonical = (key: "silhouette" | "material" | "collection", value: string) => {
+    const match = (existing ?? [])
+      .map((row) => String(row[key] ?? "").trim())
+      .find((label) => label.toLowerCase() === value.toLowerCase());
+    return match || value;
+  };
+  input.silhouette = canonical("silhouette", input.silhouette);
+  input.material = canonical("material", input.material);
+  input.collection = canonical("collection", input.collection);
+
   let previousImages: string[] = [];
   if (id !== null) {
     const { data } = await db

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import AppointmentForm from "@/components/AppointmentForm";
+import ContactBlock from "@/components/ContactBlock";
 import { GOWN_SIZES, todayInJakarta } from "@/lib/appointments";
 import { getProductBySlug } from "@/lib/products";
 
@@ -71,6 +72,7 @@ export default async function AppointmentsPage({ searchParams }: Props) {
               </li>
             ))}
           </ul>
+          <ContactBlock />
         </div>
       </div>
     </div>

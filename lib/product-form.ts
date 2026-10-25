@@ -1,14 +1,16 @@
-import {
-  COLLECTIONS,
-  MATERIALS,
-  SILHOUETTES,
-  type ProductColor,
-} from "@/lib/product-types";
+import type { ProductColor } from "@/lib/product-types";
 
 export const PRODUCT_BUCKET = "product-images";
-export const MAX_IMAGES = 10;
-export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+/** Batas pengaman saja (halaman admin tidak dimaksudkan mencapainya). */
+export const MAX_IMAGES = 50;
+/** Foto asli yang dipilih boleh sebesar ini; foto besar diperkecil di browser sebelum diunggah. */
+export const MAX_ORIGINAL_BYTES = 80 * 1024 * 1024;
 export const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+/** Pengaturan pengecilan foto di browser (lihat lib/image-resize.ts). */
+export const UPLOAD_MAX_EDGE = 2400;
+export const UPLOAD_QUALITY = 0.9;
+export const RESIZE_THRESHOLD_BYTES = 1.5 * 1024 * 1024;
 
 export type ProductField =
   | "title"
@@ -45,6 +47,11 @@ export type ProductInput = {
   images: string[];
   is_published: boolean;
 };
+
+/** Rapikan spasi ganda dan spasi di tepi. */
+function cleanLabel(value: string | undefined): string {
+  return (value ?? "").replace(/\s+/g, " ").trim();
+}
 
 export function slugify(input: string): string {
   return input
@@ -118,17 +125,17 @@ export function validateProduct(raw: Record<string, string>): {
     errors.price = "Enter the price in Rupiah, numbers only.";
   }
 
-  const silhouette = raw.silhouette ?? "";
-  if (!(SILHOUETTES as readonly string[]).includes(silhouette)) {
-    errors.silhouette = "Choose a silhouette.";
+  const silhouette = cleanLabel(raw.silhouette);
+  if (silhouette.length < 1 || silhouette.length > 40) {
+    errors.silhouette = "Enter a silhouette (up to 40 characters).";
   }
-  const material = raw.material ?? "";
-  if (!(MATERIALS as readonly string[]).includes(material)) {
-    errors.material = "Choose a material.";
+  const material = cleanLabel(raw.material);
+  if (material.length < 1 || material.length > 40) {
+    errors.material = "Enter a material (up to 40 characters).";
   }
-  const collection = raw.collection ?? "";
-  if (!(COLLECTIONS as readonly string[]).includes(collection)) {
-    errors.collection = "Choose a collection.";
+  const collection = cleanLabel(raw.collection);
+  if (collection.length < 1 || collection.length > 40) {
+    errors.collection = "Enter a collection (up to 40 characters).";
   }
 
   const description = (raw.description ?? "").trim();

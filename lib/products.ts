@@ -77,6 +77,8 @@ export async function getProductBySlug(slug: string): Promise<Product | undefine
   return data ? rowToProduct(data as ProductRow) : undefined;
 }
 
+const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+
 /** Gaun lain yang mirip: silhouette sama diutamakan, lalu collection sama. */
 export async function getRelatedProducts(
   product: Product,
@@ -88,8 +90,8 @@ export async function getRelatedProducts(
     .map((p) => ({
       p,
       score:
-        (p.silhouette === product.silhouette ? 2 : 0) +
-        (p.collection === product.collection ? 1 : 0),
+        (same(p.silhouette, product.silhouette) ? 2 : 0) +
+        (same(p.collection, product.collection) ? 1 : 0),
     }))
     .sort((a, b) => b.score - a.score || a.p.id - b.p.id)
     .slice(0, limit)

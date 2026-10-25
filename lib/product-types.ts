@@ -1,7 +1,4 @@
-// Tipe dan konstanta gaun yang aman dipakai di server maupun browser.
-export const SILHOUETTES = ["A-Line", "Ball Gown", "Mermaid", "Sheath"] as const;
-export const MATERIALS = ["Lace", "Silk", "Tulle"] as const;
-export const COLLECTIONS = ["Spring 2026", "Classic Timeless"] as const;
+// Tipe dan fungsi gaun yang aman dipakai di server maupun browser.
 
 export type ProductColor = { name: string; hex: string };
 
@@ -11,9 +8,10 @@ export type Product = {
   title: string;
   /** Harga dalam Rupiah */
   price: number;
-  silhouette: (typeof SILHOUETTES)[number];
-  material: (typeof MATERIALS)[number];
-  collection: (typeof COLLECTIONS)[number];
+  /** Teks bebas yang diisi pemilik di admin */
+  silhouette: string;
+  material: string;
+  collection: string;
   description: string;
   craftsmanship: string;
   colors: ProductColor[];
@@ -23,4 +21,15 @@ export type Product = {
 
 export function formatIDR(amount: number): string {
   return `Rp ${new Intl.NumberFormat("id-ID").format(amount)}`;
+}
+
+/** Nilai unik tanpa membedakan huruf besar atau kecil, urut abjad. */
+export function uniqueLabels(values: string[]): string[] {
+  const seen = new Map<string, string>();
+  for (const value of values) {
+    const label = value.trim();
+    const key = label.toLowerCase();
+    if (key && !seen.has(key)) seen.set(key, label);
+  }
+  return Array.from(seen.values()).sort((a, b) => a.localeCompare(b));
 }

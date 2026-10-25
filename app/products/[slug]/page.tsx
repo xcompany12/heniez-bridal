@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import ChatCta from "@/components/ChatCta";
 import ProductCard from "@/components/ProductCard";
 import ProductGallery from "@/components/ProductGallery";
 import ProductOptions from "@/components/ProductOptions";
@@ -101,6 +102,7 @@ export default async function ProductPage({ params }: Props) {
           <div className="mt-10">
             <ProductOptions slug={product.slug} colors={product.colors} />
           </div>
+          <ChatCta gownTitle={product.title} />
 
           <div className="mt-12 border-t border-line">
             {details.map((item, i) => (
